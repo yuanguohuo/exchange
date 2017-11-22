@@ -2,6 +2,7 @@
 #define __UTILS_H__
 
 #include <string>
+#include <vector>
 #include <sstream>
 #include <sys/time.h>
 

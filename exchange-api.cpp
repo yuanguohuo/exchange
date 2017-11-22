@@ -61,6 +61,7 @@ int Exchange::curl_perform_with_header(const string& url, const string& action, 
   {
     return 1;
   } 	
+  return 0;
 }
 
 int Exchange::curl_perform(const string& url, string &str_result)
@@ -89,4 +90,19 @@ size_t Exchange::curl_write_cb(void* content, size_t size, size_t nmemb, string 
 
   std::copy((char*)content,(char*)content + newLength,buffer->begin()+oldLength);
   return size*nmemb;
+}
+
+int Exchange::json_str2value(const string& jsonStr, Json::Value& jsonValue)
+{
+  Json::Reader reader;
+  try
+  {
+    jsonValue.clear();
+    reader.parse(jsonStr, jsonValue);
+  }
+  catch(exception& e)
+  {
+    return 1;
+  }
+  return 0;
 }

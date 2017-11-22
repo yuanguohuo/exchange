@@ -14,8 +14,21 @@ class Binance : public Exchange
     Binance(const char * addr, CURL* curl);
     virtual ~Binance();
 
-    int getAllPrices(map & price_map);
-    double getPrice(const string symbol);
+    int getAllPrices(map<string,double>& price_map);
+    double getPrice(const string& symbol);
+    int send_order(
+         const string& api_key,
+         const string& sec_key,
+         const string& symbol,
+         const char *side,
+         const char *type,
+         const char *timeInForce,
+         double quantity,
+         double price,
+         const string& newClientOrderId,
+         double stopPrice,
+         double icebergQty,
+         long recvWindow);
 };
 
 #endif

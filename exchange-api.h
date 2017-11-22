@@ -3,6 +3,8 @@
 
 #include <string>
 #include <curl/curl.h>
+#include "thirdparty/jsoncpp-1.8.3/json.h"
+
 using namespace std;
 
 class Exchange
@@ -13,6 +15,7 @@ class Exchange
 
     int curl_perform_with_header(const string& url, const string& action, const string& post_data, const vector<string>& extra_http_header, string &str_result);
     int curl_perform(const string& url, string &str_result);
+    int json_str2value(const string& jsonStr, Json::Value& jsonValue);
 
   public:
     static const char * SIDE_BUY;
@@ -37,17 +40,19 @@ class Exchange
     Exchange(const char * addr, CURL* curl);
     virtual ~Exchange();
 
-    int getAllPrices(map & price_map) = 0;
-    double getPrice(const string symbol) = 0;
+    virtual int getAllPrices(map<string,double>& price_map) = 0;
+    virtual double getPrice(const string& symbol) = 0;
 
-    int send_order(
-         const char *symbol,
+    virtual int send_order(
+         const string& api_key,
+         const string& sec_key,
+         const string& symbol,
          const char *side,
          const char *type,
          const char *timeInForce,
          double quantity,
          double price,
-         const char *newClientOrderId,
+         const string& newClientOrderId,
          double stopPrice,
          double icebergQty,
          long recvWindow) = 0;
