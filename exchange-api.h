@@ -40,7 +40,7 @@ class Exchange
     Exchange(const char * addr);
     virtual ~Exchange();
 
-    virtual int getAllPrices(map<string,double>& price_map) = 0;
+    virtual string get_symbol(const char* coin1, const char* coin2) const =0;
     virtual double getPrice(const string& symbol) = 0;
 
     virtual int send_order(

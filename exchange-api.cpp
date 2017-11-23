@@ -1,3 +1,4 @@
+#include <iostream>
 #include "exchange-api.h"
 
 const char * Exchange::SIDE_BUY                        = "BUY";
@@ -59,6 +60,7 @@ int Exchange::curl_perform_with_header(const string& url, const string& action, 
 
   if ( res != CURLE_OK )
   {
+    cout << "res=" << res << endl;
     return 1;
   } 	
   return 0;

@@ -25,6 +25,7 @@ OBJECTS=                         \
     $(BIN_DIR)/utils.o           \
     $(BIN_DIR)/exchange-api.o    \
     $(BIN_DIR)/binance-api.o     \
+    $(BIN_DIR)/liqui-api.o       \
     $(BIN_DIR)/executor.o        \
     $(BIN_DIR)/exchange.o        \
 
@@ -43,6 +44,8 @@ $(BIN_DIR)/exchange-api.o:  exchange-api.cpp exchange-api.h
 	g++ $(INCLUDE_PATH) -c exchange-api.cpp -o $@
 $(BIN_DIR)/binance-api.o: binance-api/binance-api.cpp binance-api/binance-api.h
 	g++ $(INCLUDE_PATH) -c binance-api/binance-api.cpp -o $@
+$(BIN_DIR)/liqui-api.o: liqui-api/liqui-api.cpp liqui-api/liqui-api.h
+	g++ $(INCLUDE_PATH) -c liqui-api/liqui-api.cpp -o $@
 $(BIN_DIR)/executor.o: executor.cpp executor.h
 	g++ $(INCLUDE_PATH) -c executor.cpp -o $@
 $(BIN_DIR)/exchange.o: exchange.cpp

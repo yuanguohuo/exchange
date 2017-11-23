@@ -11,7 +11,8 @@ using namespace std;
 class ExchExecutor
 {
   private:
-    string        symbol;
+    const char*         coin1;
+    const char*         coin2;
 
     Exchange*     exchange1;
     string        api_key1;
@@ -23,7 +24,8 @@ class ExchExecutor
 
   public:
     ExchExecutor(
-        const char* sym, 
+        const char* c1,
+        const char* c2,
         const char* akey1, 
         const char* skey1, 
         const char* akey2, 

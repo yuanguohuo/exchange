@@ -1,5 +1,5 @@
-#ifndef __BINANCE_H__
-#define __BINANCE_H__
+#ifndef __LIQUI_H__
+#define __LIQUI_H__
 
 #include <string>
 #include <curl/curl.h>
@@ -8,11 +8,11 @@
 
 using namespace std;
 
-class Binance : public Exchange
+class Liqui : public Exchange
 {
   public:
-    Binance(const char * addr);
-    virtual ~Binance();
+    Liqui(const char * addr);
+    virtual ~Liqui();
 
     string get_symbol(const char* coin1, const char* coin2) const;
     double getPrice(const string& symbol);
@@ -26,9 +26,6 @@ class Binance : public Exchange
          double quantity,
          double price,
          long recvWindow);
-
-  private:
-    int getAllPrices(map<string,double>& price_map);
 };
 
 #endif

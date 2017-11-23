@@ -1,68 +1,65 @@
 #include <iostream>
 #include "../utils/utils.h"
-#include "binance-api.h"
+#include "liqui-api.h"
 
-Binance::Binance(const char * addr) : Exchange(addr)
+Liqui::Liqui(const char * addr) : Exchange(addr)
 {
 }
 
-Binance::~Binance()
+Liqui::~Liqui()
 {
 }
 
-int Binance::getAllPrices(map<string,double>& price_map)
+
+string Liqui::get_symbol(const char* coin1, const char* coin2) const
+{
+  return string(coin1) + "_" + coin2;
+}
+
+double Liqui::getPrice(const string& symbol)
 {
   string url(server_addr);
-  url += "/api/v1/ticker/allPrices";
+  url += "/api/3/ticker/";
+  url += symbol;
 
   string str_result;
   if(curl_perform(url, str_result))
   {
-    return 1;
+    return -1;
   }
 
   if(str_result.size() <= 0)
   {
-    return 2;
+    return -2;
   }
 
   Json::Value jsonValue;
   if(json_str2value(str_result, jsonValue))
   {
-    return 3;
+    return -3;
   }
 
-	for (int i=0; i<jsonValue.size(); i++)
+  cout <<  str_result << endl;
+  cout << "--" << jsonValue[symbol.c_str()]["buy"].asString() << endl;
+  cout << "--" << jsonValue[symbol.c_str()]["sell"].asString() << endl;
+  cout << "--" << jsonValue[symbol.c_str()]["last"].asString() << endl;
+
+  double buy = atof(jsonValue[symbol.c_str()]["buy"].asString().c_str());
+  double sell = atof(jsonValue[symbol.c_str()]["sell"].asString().c_str());
+  cout << "avg: " <<  (buy + sell)/2 << endl;
+
+  double p = atof(jsonValue[symbol.c_str()]["last"].asString().c_str());
+
+  if (p <= 0)
   {
-    price_map[jsonValue[i]["symbol"].asString()] = atof(jsonValue[i]["price"].asString().c_str());
+    cout << "p=" << p << endl;
+    return -4;
   }
 
-  return 0;
+  return p;
 }
 
-string Binance::get_symbol(const char* coin1, const char* coin2) const
-{
-  return string_toupper(coin1) + string_toupper(coin2);
-}
-
-double Binance::getPrice(const string& symbol)
-{
-  map<string,double> price_map;
-  if(getAllPrices(price_map))
-  {
-    return -1;
-  }
-
-  map<string,double>::iterator itr = price_map.find(symbol);
-  if(itr == price_map.end())
-  {
-    return -2;
-  }
-
-  return itr->second;
-}
-
-int Binance::send_order(
+int Liqui::send_order(
     const string& api_key,
     const string& sec_key,
     const string& symbol,
