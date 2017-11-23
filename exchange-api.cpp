@@ -1,4 +1,3 @@
-#include <assert.h>
 #include "exchange-api.h"
 
 const char * Exchange::SIDE_BUY                        = "BUY";
@@ -28,7 +27,6 @@ Exchange::~Exchange()
 
 int Exchange::curl_perform_with_header(const string& url, const string& action, const string& post_data, const vector<string>& extra_http_header, string &str_result)
 {
-  assert(curl_handle);
   curl_easy_reset(curl_handle);
 
   curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str() );
@@ -84,7 +82,6 @@ size_t Exchange::curl_write_cb(void* content, size_t size, size_t nmemb, string 
   catch(std::bad_alloc &e)
   {
     //TODO
-    assert(false);
     return 0;
   }
 

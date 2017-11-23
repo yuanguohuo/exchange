@@ -1,8 +1,8 @@
 #include <unistd.h>
 #include <string>
+#include <string.h>
 #include <sstream>
 #include <vector>
-#include <string.h>
 #include <sys/time.h>
 #include <openssl/hmac.h>
 #include <openssl/sha.h>

@@ -25,10 +25,12 @@ inline string to_string (const T& t)
   return ss.str();
 }
 
+/*
 inline bool file_exists (const std::string& name)
 {
   return ( access( name.c_str(), F_OK ) != -1 );
 }
+*/
 
 string hmac_sha256( const char *key, const char *data);
 string sha256( const char *data );
