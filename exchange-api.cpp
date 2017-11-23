@@ -17,12 +17,14 @@ const char * Exchange::ORDERSTATUS_PENDING_CANCEL      = "PENDING_CANCEL";
 const char * Exchange::ORDERSTATUS_REJECTED            = "REJECTED";
 const char * Exchange::ORDERSTATUS_EXPIRED             = "EXPIRED";
 
-Exchange::Exchange(const char * addr, CURL* curl) : server_addr(addr), curl_handle(curl)
+Exchange::Exchange(const char * addr) : server_addr(addr)
 {
+  curl_handle = curl_easy_init();
 }
 
 Exchange::~Exchange()
 {
+  curl_easy_cleanup(curl_handle);
 }
 
 int Exchange::curl_perform_with_header(const string& url, const string& action, const string& post_data, const vector<string>& extra_http_header, string &str_result)

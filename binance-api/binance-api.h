@@ -11,7 +11,7 @@ using namespace std;
 class Binance : public Exchange
 {
   public:
-    Binance(const char * addr, CURL* curl);
+    Binance(const char * addr);
     virtual ~Binance();
 
     int getAllPrices(map<string,double>& price_map);
@@ -25,9 +25,6 @@ class Binance : public Exchange
          const char *timeInForce,
          double quantity,
          double price,
-         const string& newClientOrderId,
-         double stopPrice,
-         double icebergQty,
          long recvWindow);
 };
 

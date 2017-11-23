@@ -3,7 +3,7 @@
 
 #include <string>
 #include <curl/curl.h>
-#include "thirdparty/jsoncpp-1.8.3/json.h"
+#include "thirdparty/jsoncpp-1.8.3/json.h" 
 
 using namespace std;
 
@@ -37,7 +37,7 @@ class Exchange
 
     static size_t curl_write_cb(void* content, size_t size, size_t nmemb, string *buffer);
 
-    Exchange(const char * addr, CURL* curl);
+    Exchange(const char * addr);
     virtual ~Exchange();
 
     virtual int getAllPrices(map<string,double>& price_map) = 0;
@@ -52,9 +52,6 @@ class Exchange
          const char *timeInForce,
          double quantity,
          double price,
-         const string& newClientOrderId,
-         double stopPrice,
-         double icebergQty,
          long recvWindow) = 0;
 };
 

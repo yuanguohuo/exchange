@@ -1,7 +1,8 @@
+#include <iostream>
 #include "../utils/utils.h"
 #include "binance-api.h"
 
-Binance::Binance(const char * addr, CURL* curl) : Exchange(addr, curl)
+Binance::Binance(const char * addr) : Exchange(addr)
 {
 }
 
@@ -65,9 +66,6 @@ int Binance::send_order(
     const char *timeInForce,
     double quantity,
     double price,
-    const string& newClientOrderId,
-    double stopPrice,
-    double icebergQty,
     long recvWindow)
 {
   string url(server_addr);
@@ -93,24 +91,6 @@ int Binance::send_order(
   post_data.append("&price=");
   post_data.append(to_string(price));
 
-  if (newClientOrderId.size() > 0)
-  {
-    post_data.append("&newClientOrderId=");
-    post_data.append(newClientOrderId);
-  }
-
-  if (stopPrice > 0.0)
-  {
-    post_data.append("&stopPrice=");
-    post_data.append(to_string(stopPrice));
-  }
-
-  if (icebergQty > 0.0)
-  {
-    post_data.append("&icebergQty=");
-    post_data.append(to_string(icebergQty));
-  }
-
   if (recvWindow > 0)
   {
     post_data.append("&recvWindow=");
@@ -129,11 +109,17 @@ int Binance::send_order(
   header_chunk.append(api_key);
   extra_http_header.push_back(header_chunk);
 
+  cout << "url: " << url <<endl;
+  cout << "action: " << action <<endl;
+  cout << "post_data: " << post_data <<endl;
+
   string str_result;
   if(curl_perform_with_header(url, action, post_data, extra_http_header, str_result))
   {
     return 1;
   }
+
+  cout << "str_result: " << str_result <<endl;
 
   if (str_result.size() <= 0)
   {
