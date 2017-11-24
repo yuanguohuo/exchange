@@ -64,7 +64,7 @@ double Binance::getPrice(const string& symbol)
 
 double Binance::getFee(const string& symbol)
 {
-  return 0;
+  return 0.0005;
 }
 
 int Binance::send_order(

@@ -7,6 +7,7 @@
 using namespace std;
 
 ExchExecutor::ExchExecutor(
+    const double a,
     const char* c1, 
     const char* c2, 
     const char* akey1, 
@@ -15,7 +16,7 @@ ExchExecutor::ExchExecutor(
     const char* skey2, 
     const char* addr1, 
     const char* addr2)
-       : coin1(c1), coin2(c2), api_key1(akey1), sec_key1(skey1), api_key2(akey2), sec_key2(skey2)
+       : amount(a), coin1(c1), coin2(c2), api_key1(akey1), sec_key1(skey1), api_key2(akey2), sec_key2(skey2)
 {
   exchange1 = new Binance(addr1);
   exchange2 = new Liqui(addr2);
@@ -35,26 +36,34 @@ void ExchExecutor::execute()
   double price2 = exchange2->getPrice(exchange2->get_symbol(coin1, coin2));
 
   cerr << endl << endl << "--------------------------------------------" << endl;
-  cerr << "price1=" << price1 << endl;
-  cerr << "price2=" << price2 << endl;
 
-  double fee1 = exchange1->getFee(exchange1->get_symbol(coin1, coin2));
-  double fee2 = exchange2->getFee(exchange2->get_symbol(coin1, coin2));
+  double value1 = amount * price1; 
+  double value2 = amount * price2; 
+  double gap = value1>value2?(value1-value2):(value2-value1);
 
-  double price_fee1 = fee1 * price1;
-  double price_fee2 = fee2 * price2;
-  double total_fee = price_fee1 + price_fee2;
+  double f1 = exchange1->getFee(exchange1->get_symbol(coin1, coin2));
+  double f2 = exchange2->getFee(exchange2->get_symbol(coin1, coin2));
 
-  cerr << "fee1 =" << fee1 << "*" << price1 << " = " << price_fee1 << endl;
-  cerr << "fee2 =" << fee2 << "*" << price2 << " = " << price_fee2 << endl;
+  double fee1 = value1 * f1; 
+  double fee2 = value2 * f2;
+  double total_fee = fee1 + fee2;
 
-  double gap = price1 > price2 ? (price1-price2) : (price2-price1);
+  double net_gap = gap - total_fee;
 
-  cerr << "total_fee=" << total_fee << " gap=" << gap << endl;
-
-  if(gap > total_fee)
+  cerr << "amount     = " << amount << endl;
+  cerr << "price1     = " << price1 << endl;
+  cerr << "price2     = " << price2 << endl;
+  cerr << "value1     = " << value1 << endl;
+  cerr << "value2     = " << value2 << endl;
+  cerr << "gap        = " << gap << " (abs(" << value1 << "-" << value2 << "))" << endl;
+  cerr << "fee1       = " << fee1 << " (" << value1 << "*" << f1 << ")" << endl;
+  cerr << "fee2       = " << fee2 << " (" << value2 << "*" << f2 << ")" << endl;
+  cerr << "total_fee  = " << total_fee << endl;
+  cerr << "net_gap    = " << net_gap << endl;
+  
+  if (net_gap > 0)
   {
-    cout << endl << "We got a gap: " << gap-total_fee << endl;
+    cout << "Yes!!! net_gap=" << net_gap << endl;
   }
   else
   {

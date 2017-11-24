@@ -52,6 +52,14 @@ double Liqui::getPrice(const string& symbol)
 
 double Liqui::getFee(const string& symbol)
 {
+  map<string, double>::const_iterator itr = fee_map.find(symbol);
+  if (itr != fee_map.end())
+  {
+    return itr->second;
+  }
+
+  cout << "didn't find fee in map, get it!" << endl;
+
   string url(server_addr);
   url += "/api/3/info";
 
@@ -77,6 +85,10 @@ double Liqui::getFee(const string& symbol)
   {
     return -4;
   }
+
+  f = f/((double)100);
+
+  fee_map[symbol] = f;
 
   return f;
 }

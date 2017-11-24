@@ -11,6 +11,7 @@ using namespace std;
 class ExchExecutor
 {
   private:
+    const double        amount;
     const char*         coin1;
     const char*         coin2;
 
@@ -24,6 +25,7 @@ class ExchExecutor
 
   public:
     ExchExecutor(
+        const double a,
         const char* c1,
         const char* c2,
         const char* akey1, 

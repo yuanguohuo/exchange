@@ -52,7 +52,7 @@ $(BIN_DIR)/exchange.o: exchange.cpp
 	g++ $(INCLUDE_PATH) -c exchange.cpp -o $@
 
 test:
-	export LD_LIBRARY_PATH=$(LIBCURL_LIB) ; ./$(EXE)
+	export LD_LIBRARY_PATH=$(LIBCURL_LIB) ; ./$(EXE) 100 eos eth
 
 clean:
 	rm -fr $(BIN_DIR)

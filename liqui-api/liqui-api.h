@@ -10,6 +10,8 @@ using namespace std;
 
 class Liqui : public Exchange
 {
+  private:
+    map<string, double> fee_map;
   public:
     Liqui(const char * addr);
     virtual ~Liqui();
