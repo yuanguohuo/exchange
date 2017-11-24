@@ -1,4 +1,6 @@
 #include <iostream>
+#include <assert.h>
+#include <unistd.h>
 
 #include "binance-api/binance-api.h"
 #include "liqui-api/liqui-api.h"
@@ -35,7 +37,7 @@ void ExchExecutor::execute()
   double price1 = exchange1->getPrice(exchange1->get_symbol(coin1, coin2));
   double price2 = exchange2->getPrice(exchange2->get_symbol(coin1, coin2));
 
-  cerr << endl << endl << "--------------------------------------------" << endl;
+  cout << endl << endl << "--------------------------------------------" << endl;
 
   double value1 = amount * price1; 
   double value2 = amount * price2; 
@@ -50,20 +52,21 @@ void ExchExecutor::execute()
 
   double net_gap = gap - total_fee;
 
-  cerr << "amount     = " << amount << endl;
-  cerr << "price1     = " << price1 << endl;
-  cerr << "price2     = " << price2 << endl;
-  cerr << "value1     = " << value1 << endl;
-  cerr << "value2     = " << value2 << endl;
-  cerr << "gap        = " << gap << " (abs(" << value1 << "-" << value2 << "))" << endl;
-  cerr << "fee1       = " << fee1 << " (" << value1 << "*" << f1 << ")" << endl;
-  cerr << "fee2       = " << fee2 << " (" << value2 << "*" << f2 << ")" << endl;
-  cerr << "total_fee  = " << total_fee << endl;
-  cerr << "net_gap    = " << net_gap << endl;
+  cout << "amount     = " << amount << endl;
+  cout << "price1     = " << price1 << endl;
+  cout << "price2     = " << price2 << endl;
+  cout << "value1     = " << value1 << endl;
+  cout << "value2     = " << value2 << endl;
+  cout << "gap        = " << gap << " (abs(" << value1 << "-" << value2 << "))" << endl;
+  cout << "fee1       = " << fee1 << " (" << value1 << "*" << f1 << ")" << endl;
+  cout << "fee2       = " << fee2 << " (" << value2 << "*" << f2 << ")" << endl;
+  cout << "total_fee  = " << total_fee << endl;
+  cout << "net_gap    = " << net_gap << endl;
   
   if (net_gap > 0)
   {
-    cout << "Yes!!! net_gap=" << net_gap << endl;
+    cout << endl << "Yes!!! net_gap=" << net_gap << endl;
+    sleep(30);
   }
   else
   {

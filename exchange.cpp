@@ -6,6 +6,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+  cout << argv[0] << endl;
   if(argc != 4)
   {
     cout << "Usage: " << argv[0] << " amount coin1 coin2" << endl;
@@ -17,6 +18,7 @@ int main(int argc, char** argv)
   {
     cout << "Error: amount must be positive." << endl;
     cout << "Usage: " << argv[0] << " amount coin1 coin2" << endl;
+    return 2;
   }
   
   curl_global_init(CURL_GLOBAL_DEFAULT);
