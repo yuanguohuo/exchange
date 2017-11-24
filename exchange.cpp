@@ -17,7 +17,9 @@ int main()
       "UvKM1JS1SQSOE8dAY9wRgK1TR9zxD2waLk1iGtWixX76t1kKsIrr9nw3MhSkDGc8",
       "https://api.binance.com", 
       "https://api.liqui.io");
-  executor.execute();
+
+  while(1)
+    executor.execute();
 
   curl_global_cleanup();
   return 0;

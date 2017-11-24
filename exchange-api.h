@@ -41,8 +41,9 @@ class Exchange
     virtual ~Exchange();
 
     virtual string get_symbol(const char* coin1, const char* coin2) const =0;
-    virtual double getPrice(const string& symbol) = 0;
 
+    virtual double getPrice(const string& symbol) = 0;
+    virtual double getFee(const string& symbol) = 0;
     virtual int send_order(
          const string& api_key,
          const string& sec_key,
@@ -53,6 +54,9 @@ class Exchange
          double quantity,
          double price,
          long recvWindow) = 0;
+
+  private:
+    int get_allFees(map<string, double>& fee_map);
 };
 
 #endif

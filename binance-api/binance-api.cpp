@@ -62,6 +62,11 @@ double Binance::getPrice(const string& symbol)
   return itr->second;
 }
 
+double Binance::getFee(const string& symbol)
+{
+  return 0;
+}
+
 int Binance::send_order(
     const string& api_key,
     const string& sec_key,

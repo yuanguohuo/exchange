@@ -39,15 +39,6 @@ double Liqui::getPrice(const string& symbol)
     return -3;
   }
 
-  cout <<  str_result << endl;
-  cout << "--" << jsonValue[symbol.c_str()]["buy"].asString() << endl;
-  cout << "--" << jsonValue[symbol.c_str()]["sell"].asString() << endl;
-  cout << "--" << jsonValue[symbol.c_str()]["last"].asString() << endl;
-
-  double buy = atof(jsonValue[symbol.c_str()]["buy"].asString().c_str());
-  double sell = atof(jsonValue[symbol.c_str()]["sell"].asString().c_str());
-  cout << "avg: " <<  (buy + sell)/2 << endl;
-
   double p = atof(jsonValue[symbol.c_str()]["last"].asString().c_str());
 
   if (p <= 0)
@@ -57,6 +48,37 @@ double Liqui::getPrice(const string& symbol)
   }
 
   return p;
+}
+
+double Liqui::getFee(const string& symbol)
+{
+  string url(server_addr);
+  url += "/api/3/info";
+
+  string str_result;
+  if(curl_perform(url, str_result))
+  {
+    return -1;
+  }
+
+  if(str_result.size() <= 0)
+  {
+    return -2;
+  }
+
+  Json::Value jsonValue;
+  if(json_str2value(str_result, jsonValue))
+  {
+    return -3;
+  }
+
+  double f = atof(jsonValue["pairs"][symbol.c_str()]["fee"].asString().c_str());
+  if(f <= 0)
+  {
+    return -4;
+  }
+
+  return f;
 }
 
 int Liqui::send_order(

@@ -34,8 +34,32 @@ void ExchExecutor::execute()
   double price1 = exchange1->getPrice(exchange1->get_symbol(coin1, coin2));
   double price2 = exchange2->getPrice(exchange2->get_symbol(coin1, coin2));
 
-  cout << "price1=" << price1 << endl;
-  cout << "price2=" << price2 << endl;
+  cerr << endl << endl << "--------------------------------------------" << endl;
+  cerr << "price1=" << price1 << endl;
+  cerr << "price2=" << price2 << endl;
+
+  double fee1 = exchange1->getFee(exchange1->get_symbol(coin1, coin2));
+  double fee2 = exchange2->getFee(exchange2->get_symbol(coin1, coin2));
+
+  double price_fee1 = fee1 * price1;
+  double price_fee2 = fee2 * price2;
+  double total_fee = price_fee1 + price_fee2;
+
+  cerr << "fee1 =" << fee1 << "*" << price1 << " = " << price_fee1 << endl;
+  cerr << "fee2 =" << fee2 << "*" << price2 << " = " << price_fee2 << endl;
+
+  double gap = price1 > price2 ? (price1-price2) : (price2-price1);
+
+  cerr << "total_fee=" << total_fee << " gap=" << gap << endl;
+
+  if(gap > total_fee)
+  {
+    cout << endl << "We got a gap: " << gap-total_fee << endl;
+  }
+  else
+  {
+    cout << ".";
+  }
 
   /*
   price1 -= 0.0002;

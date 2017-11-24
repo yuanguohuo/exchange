@@ -15,7 +15,9 @@ class Liqui : public Exchange
     virtual ~Liqui();
 
     string get_symbol(const char* coin1, const char* coin2) const;
+
     double getPrice(const string& symbol);
+    double getFee(const string& symbol);
     int send_order(
          const string& api_key,
          const string& sec_key,
