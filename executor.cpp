@@ -33,8 +33,8 @@ ExchExecutor::ExchExecutor(
     assert(ret == 0);
 
     threads[i] = new ExchThread(pipe_cmd[0], pipe_done[1], _exchanges[i], base_coin, _num_trades, _trades);
-    pipes_write_cmd[i] = pipe_cmd[2];
-    pipes_read_done[i] = pipe_done[1];
+    pipes_write_cmd[i] = pipe_cmd[1];
+    pipes_read_done[i] = pipe_done[0];
   }
 }
 
@@ -161,6 +161,7 @@ void ExchExecutor::start()
           continue;
         }
 
+        std::cerr << "errno=" << errno << std::endl;
         assert(false);
       }
     }
@@ -173,6 +174,8 @@ void ExchExecutor::start()
       {
         cout << "\t" << threads[j]->price_map[string(trades[i].coin)];
       }
+
+      cout << endl;
     }
   }
 

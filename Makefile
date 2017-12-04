@@ -1,6 +1,6 @@
 GPP_FLAGS=      \
     -std=c++11  \
-    -g          \
+
 
 LIBCURL=/usr/local/curl-7.56.0
 LIBCURL_INCLUDE=$(LIBCURL)/include
