@@ -18,7 +18,7 @@ const char * Exchange::ORDERSTATUS_PENDING_CANCEL      = "PENDING_CANCEL";
 const char * Exchange::ORDERSTATUS_REJECTED            = "REJECTED";
 const char * Exchange::ORDERSTATUS_EXPIRED             = "EXPIRED";
 
-Exchange::Exchange(const char * addr) : server_addr(addr)
+Exchange::Exchange(const char* addr, const char* akey, const char* skey) : server_addr(addr), api_key(akey), sec_key(skey)
 {
   curl_handle = curl_easy_init();
 }

@@ -13,16 +13,19 @@ class Liqui : public Exchange
   private:
     map<string, double> fee_map;
   public:
-    Liqui(const char * addr);
+    Liqui(const char* addr, const char* akey, const char* skey);
     virtual ~Liqui();
 
-    string get_symbol(const char* coin1, const char* coin2) const;
+    const char* get_name() const
+    {
+      return "Liqui";
+    }
+    string get_symbol(const char* coin, const char* base_coin) const;
 
     double getPrice(const string& symbol);
+    int getPrices(const char* base_coin, int num_trades, const Trade* trades, map<string,double> & ret_map);
     double getFee(const string& symbol);
     int send_order(
-         const string& api_key,
-         const string& sec_key,
          const string& symbol,
          const char *side,
          const char *type,

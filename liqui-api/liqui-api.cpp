@@ -2,7 +2,7 @@
 #include "../utils/utils.h"
 #include "liqui-api.h"
 
-Liqui::Liqui(const char * addr) : Exchange(addr)
+Liqui::Liqui(const char* addr, const char* akey, const char* skey) : Exchange(addr, akey, skey)
 {
 }
 
@@ -11,9 +11,9 @@ Liqui::~Liqui()
 }
 
 
-string Liqui::get_symbol(const char* coin1, const char* coin2) const
+string Liqui::get_symbol(const char* coin, const char* base_coin) const
 {
-  return string(coin1) + "_" + coin2;
+  return string(coin) + "_" + base_coin;
 }
 
 double Liqui::getPrice(const string& symbol)
@@ -48,6 +48,61 @@ double Liqui::getPrice(const string& symbol)
   }
 
   return p;
+}
+
+int Liqui::getPrices(const char* base_coin, int num_trades, const Trade* trades, map<string,double> & ret_map)
+{
+  string url(server_addr);
+  url += "/api/3/ticker/";
+
+  bool first = true;
+  for(int i=0;i<num_trades;i++)
+  {
+    if(first)
+    {
+      first = false;
+    }
+    else
+    {
+      url += "-";
+    }
+
+    url += get_symbol(trades[i].coin, base_coin);
+  }
+
+  string str_result;
+  if(curl_perform(url, str_result))
+  {
+    return 1;
+  }
+
+  if(str_result.size() <= 0)
+  {
+    return 2;
+  }
+
+  Json::Value jsonValue;
+  if(json_str2value(str_result, jsonValue))
+  {
+    return 3;
+  }
+
+
+  for(int i=0;i<num_trades;i++)
+  {
+    string sym = get_symbol(trades[i].coin, base_coin);
+    double p = atof(jsonValue[sym.c_str()]["last"].asString().c_str());
+    if(p<=0)
+    {
+      cout << "WARN: price " << sym << ": " << p << endl;
+    }
+    else
+    {
+      ret_map[string(trades[i].coin)] = p;
+    }
+  }
+
+  return 0;
 }
 
 double Liqui::getFee(const string& symbol)
@@ -94,8 +149,6 @@ double Liqui::getFee(const string& symbol)
 }
 
 int Liqui::send_order(
-    const string& api_key,
-    const string& sec_key,
     const string& symbol,
     const char *side,
     const char *type,
@@ -136,7 +189,7 @@ int Liqui::send_order(
   post_data.append("&timestamp=");
   post_data.append(to_string(get_current_ms_epoch()));
 
-  string signature = hmac_sha256(sec_key.c_str(), post_data.c_str());
+  string signature = hmac_sha256(sec_key, post_data.c_str());
   post_data.append("&signature=");
   post_data.append(signature);
 

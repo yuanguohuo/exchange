@@ -1,8 +1,10 @@
 #include <iostream>
+#include <assert.h>
+
 #include "../utils/utils.h"
 #include "binance-api.h"
 
-Binance::Binance(const char * addr) : Exchange(addr)
+Binance::Binance(const char* addr, const char* akey, const char* skey) : Exchange(addr, akey, skey)
 {
 }
 
@@ -40,9 +42,9 @@ int Binance::getAllPrices(map<string,double>& price_map)
   return 0;
 }
 
-string Binance::get_symbol(const char* coin1, const char* coin2) const
+string Binance::get_symbol(const char* coin, const char* base_coin) const
 {
-  return string_toupper(coin1) + string_toupper(coin2);
+  return string_toupper(coin) + string_toupper(base_coin);
 }
 
 double Binance::getPrice(const string& symbol)
@@ -62,14 +64,33 @@ double Binance::getPrice(const string& symbol)
   return itr->second;
 }
 
+int Binance::getPrices(const char* base_coin, int num_trades, const Trade* trades, map<string,double> & ret_map)
+{
+  map<string,double> price_map;
+  if(getAllPrices(price_map))
+  {
+    return 1;
+  }
+
+  for(int i=0; i<num_trades; ++i)
+  {
+    map<string,double>::iterator itr = price_map.find(get_symbol(trades[i].coin, base_coin));
+    if(itr == price_map.end())
+    {
+      assert(false);
+    }
+
+    ret_map[string(trades[i].coin)] = itr->second;
+  }
+  return 0;
+}
+
 double Binance::getFee(const string& symbol)
 {
   return 0.0025;
 }
 
 int Binance::send_order(
-    const string& api_key,
-    const string& sec_key,
     const string& symbol,
     const char *side,
     const char *type,
@@ -110,7 +131,7 @@ int Binance::send_order(
   post_data.append("&timestamp=");
   post_data.append(to_string(get_current_ms_epoch()));
 
-  string signature = hmac_sha256(sec_key.c_str(), post_data.c_str());
+  string signature = hmac_sha256(sec_key, post_data.c_str());
   post_data.append("&signature=");
   post_data.append(signature);
 

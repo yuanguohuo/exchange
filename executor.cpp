@@ -8,32 +8,176 @@
 
 using namespace std;
 
+
 ExchExecutor::ExchExecutor(
-    const double a,
-    const char* c1, 
-    const char* c2, 
-    const char* akey1, 
-    const char* skey1, 
-    const char* akey2, 
-    const char* skey2, 
-    const char* addr1, 
-    const char* addr2)
-       : amount(a), coin1(c1), coin2(c2), api_key1(akey1), sec_key1(skey1), api_key2(akey2), sec_key2(skey2)
+    int             _num_exchanges,
+    Exchange**      _exchanges,
+    const char*     _base_coin,
+    int             _num_trades,
+    Trade*          _trades) : num_exchanges(_num_exchanges), base_coin(_base_coin), num_trades(_num_trades), trades(_trades)
 {
-  exchange1 = new Binance(addr1);
-  exchange2 = new Liqui(addr2);
+  threads = new ExchThread*[num_exchanges];
+  pipes_write_cmd = new int[num_exchanges];
+  pipes_read_done = new int[num_exchanges];
+
+  for (int i=0; i<num_exchanges; ++i)
+  {
+    int ret;
+    int pipe_cmd[2];
+    int pipe_done[2];
+
+    ret = pipe(pipe_cmd);
+    assert(ret == 0);
+
+    ret = pipe(pipe_done);
+    assert(ret == 0);
+
+    threads[i] = new ExchThread(pipe_cmd[0], pipe_done[1], _exchanges[i], base_coin, _num_trades, _trades);
+    pipes_write_cmd[i] = pipe_cmd[2];
+    pipes_read_done[i] = pipe_done[1];
+  }
 }
 
 ExchExecutor::~ExchExecutor()
 {
-  delete exchange1;
-  delete exchange2;
-  exchange1 = NULL;
-  exchange2 = NULL;
+  for(int i=0;i<num_exchanges;++i)
+  {
+    threads[i]->join();
+    delete threads[i];
+  }
+  delete[] threads;
+  delete[] pipes_write_cmd;
+  delete[] pipes_read_done;
+
+  threads = NULL;
+  pipes_write_cmd = NULL;
+  pipes_read_done = NULL;
 }
 
-void ExchExecutor::execute()
+void* ExchExecutor::ExchThread::body()
 {
+  while(true)
+  {
+    char buf[1];
+    ssize_t c;
+    while(true)
+    {
+      c = read(pipe_read_cmd, buf, 1);
+
+      if(c==0)  //EOF, terminate;
+      {
+        return NULL;
+      }
+
+      if(c==1) //successful read;
+      {
+        break;
+      }
+
+      //error
+      if(errno == EINTR)  //interrupted by a signal, re-try
+      {
+        continue;
+      }
+
+      assert(false);
+    }
+
+    if(buf[0] == 'a')  //get prices
+    {
+      for(int i=0;i<num_trades;++i)
+      {
+        price_map[string(trades[i].coin)] = -9999;
+      }
+
+      exch->getPrices(base_coin, num_trades, trades, price_map);
+
+      while(true)
+      {
+        c = write(pipe_write_done, buf, 1);
+        if(c==1)  //success write;
+        {
+          break;
+        }
+
+        //error
+        if(errno == EINTR) //interrupted by a signal, re-try
+        {
+          continue;
+        }
+
+        assert(false);
+      }
+    }
+    else if(buf[0] == 'b')
+    {
+      assert(false);
+    }
+  }
+}
+
+void ExchExecutor::start()
+{
+  for(int i=0;i<num_exchanges;++i)
+  {
+    threads[i]->create(threads[i]->get_exchange()->get_name());
+  }
+
+  while(true)
+  {
+    ssize_t c;
+    for(int i=0;i<num_exchanges;++i)
+    {
+      while(true)
+      {
+        c = write(pipes_write_cmd[i], "a", 1);
+        if(c==1) //success write;
+        {
+          break;
+        }
+
+        if(errno == EINTR) //interrupted by a signal, re-try
+        {
+          continue;
+        }
+
+        assert(false);
+      }
+    }
+
+    for(int i=0;i<num_exchanges;++i)
+    {
+      while(true)
+      {
+        char buf[1];
+        c = read(pipes_read_done[i], buf, 1);
+        if(c==1) //success read;
+        {
+          break;
+        }
+
+        if(errno == EINTR) //interrupted by a signal, re-try
+        {
+          continue;
+        }
+
+        assert(false);
+      }
+    }
+
+    for(int i=0; i<num_trades; i++)
+    {
+      cout << trades[i].coin;
+
+      for(int j=0;j<num_exchanges;++j)
+      {
+        cout << "\t" << threads[j]->price_map[string(trades[i].coin)];
+      }
+    }
+  }
+
+
+  /*
   double price1 = exchange1->getPrice(exchange1->get_symbol(coin1, coin2));
   double price2 = exchange2->getPrice(exchange2->get_symbol(coin1, coin2));
 
@@ -73,7 +217,7 @@ void ExchExecutor::execute()
     cout << ".";
   }
 
-  /*
+
   price1 -= 0.0002;
   cout << "bid " << price1 << endl;
   exchange1->send_order(
@@ -100,4 +244,12 @@ void ExchExecutor::execute()
       price2,
       5000);
   */
+}
+
+void ExchExecutor::stop()
+{
+  for(int i=0;i<num_exchanges;++i)
+  {
+    threads[i]->join();
+  }
 }
