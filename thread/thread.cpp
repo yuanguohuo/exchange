@@ -92,6 +92,9 @@ void* Thread::body_wrapper()
   assert(thread_id == pthread_self());
   pthread_setname_np(thread_id, thread_name);
 
+  
+  std::cout << "start thread: " << thread_name << "[" << thread_id << "\t" << tid << "\t" << tgid << "]" << std::endl;
+
   return body();
 }
 
