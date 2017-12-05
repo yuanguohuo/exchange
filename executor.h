@@ -16,19 +16,20 @@ class ExchExecutor
     class ExchThread : public Thread
     {
       private:
-        int pipe_read_cmd;
-        int pipe_write_done;
+        int             pipe_read_cmd;
+        int             pipe_write_done;
 
-        Exchange* exch;
+        Exchange*       exch;
 
-        const char* base_coin;
-        int num_trades;
-        Trade* trades;
+        const char*     base_coin;
+        int             num_trades;
+        Trade*          trades;
 
       public:
-        map<string, double> price_map;
-        map<string, int> trade_ret;
-        map<string, int> order_status;
+        map<string, double>     price_map;
+        map<string, int>        trade_ret;
+        map<string, int>        order_status;
+        int                     trade_index;
 
         ExchThread(
             int          _pipe_read_cmd,

@@ -78,9 +78,55 @@ void* ExchExecutor::ExchThread::body()
       c = safe_write(pipe_write_done, buf, 1);
       assert(c==0);
     }
-    else if(buf[0] == 'b')
+    else if(buf[0] == 'b') //buy
     {
-      assert(false);
+      double price = price_map[string(trades[trade_index].coin)];
+      assert(price>0 && price<0.001);
+
+      int ret = exch->send_order(
+          base_coin,
+          trades[trade_index].coin,
+          Exchange::SIDE_BUY,
+          trades[trade_index].amount,
+          price,
+          Exchange::TYPE_LIMIT,
+          Exchange::TIMEINFORCE_GTC,
+          5000);
+      if(ret!=0)
+      {
+        cout << "failed to buy: " << trades[trade_index].coin << endl;
+      }
+      else
+      {
+        c = safe_write(pipe_write_done, buf, 1);
+        assert(c==0);
+        cout << "succeeded to buy: " << trades[trade_index].coin << endl;
+      }
+    }
+    else if(buf[0] == 's') //sell
+    {
+      double price = price_map[string(trades[trade_index].coin)];
+      assert(price>0 && price<0.001);
+
+      int ret = exch->send_order(
+          base_coin,
+          trades[trade_index].coin,
+          Exchange::SIDE_SELL,
+          trades[trade_index].amount,
+          price,
+          Exchange::TYPE_LIMIT,
+          Exchange::TIMEINFORCE_GTC,
+          5000);
+      if(ret!=0)
+      {
+        cout << "failed to sell: " << trades[trade_index].coin << endl;
+      }
+      else
+      {
+        c = safe_write(pipe_write_done, buf, 1);
+        assert(c==0);
+        cout << "succeeded to sell: " << trades[trade_index].coin << endl;
+      }
     }
   }
 }
@@ -136,30 +182,46 @@ void ExchExecutor::start()
 
       cout << " " << setw(14) << max << " " << setw(14) << min;
 
-      double gap = -1;
-      double ratio = -1;
-      if(max > 0 && min < max && min > 0)
+      if(max<=0 || min <=0 || min >= max)
       {
-        gap = max - min;
-        double fee = (max * 0.0025) +  (min * 0.0025);
-
-        if(gap > fee)
-        {
-          gap -= fee;
-          ratio = (100 * gap) / min;
-          cout << " " << setw(14) << gap << " " << setw(14) << ratio;
-
-          if(ratio > 3)
-          {
-            assert(max_index>=0 && max_index<num_exchanges);
-            assert(min_index>=0 && min_index<num_exchanges);
-
-            return;
-          }
-        }
+        cout << endl;
+        continue;
       }
 
-      cout << endl;
+      double gap = max - min;
+      double fee = (max * 0.0025) + (min * 0.0025);
+
+      if(gap <= fee)
+      {
+        cout << endl;
+        continue;
+      }
+
+      gap -= fee;
+      double ratio = (100 * gap) / min;  //percent
+      cout << " " << setw(14) << gap << " " << setw(14) << ratio << endl;
+
+      if(ratio<3)
+      {
+        continue;
+      }
+
+      cout << "Yes, ratio=" << ratio << endl;
+
+      assert(max_index>=0 && max_index<num_exchanges);
+      assert(min_index>=0 && min_index<num_exchanges);
+
+      c = safe_write(pipes_write_cmd[max_index], "s", 1);
+      assert(c==0);
+      c = safe_write(pipes_write_cmd[min_index], "b", 1);
+      assert(c==0);
+
+      c = safe_read(pipes_read_done[max_index], buf, 1);
+      assert(c==1 && buf[0]=='s');
+      c = safe_read(pipes_read_done[min_index], buf, 1);
+      assert(c==1 && buf[0]=='b');
+
+      sleep(60);
     }
   }
 
