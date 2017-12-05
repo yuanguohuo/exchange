@@ -1,10 +1,12 @@
 #include <iostream>
 #include <assert.h>
 #include <unistd.h>
+#include <iomanip>
 
 #include "binance-api/binance-api.h"
 #include "liqui-api/liqui-api.h"
 #include "executor.h"
+#include "utils/utils.h"
 
 using namespace std;
 
@@ -56,34 +58,15 @@ ExchExecutor::~ExchExecutor()
 
 void* ExchExecutor::ExchThread::body()
 {
+  char buf[1];
+  ssize_t c;
+
   while(true)
   {
-    char buf[1];
-    ssize_t c;
-    while(true)
-    {
-      c = read(pipe_read_cmd, buf, 1);
+    c = safe_read(pipe_read_cmd, buf, 1);
+    assert(c==1);
 
-      if(c==0)  //EOF, terminate;
-      {
-        return NULL;
-      }
-
-      if(c==1) //successful read;
-      {
-        break;
-      }
-
-      //error
-      if(errno == EINTR)  //interrupted by a signal, re-try
-      {
-        continue;
-      }
-
-      assert(false);
-    }
-
-    if(buf[0] == 'a')  //get prices
+    if(buf[0] == 'p')  //get prices
     {
       for(int i=0;i<num_trades;++i)
       {
@@ -92,22 +75,8 @@ void* ExchExecutor::ExchThread::body()
 
       exch->getPrices(base_coin, num_trades, trades, price_map);
 
-      while(true)
-      {
-        c = write(pipe_write_done, buf, 1);
-        if(c==1)  //success write;
-        {
-          break;
-        }
-
-        //error
-        if(errno == EINTR) //interrupted by a signal, re-try
-        {
-          continue;
-        }
-
-        assert(false);
-      }
+      c = safe_write(pipe_write_done, buf, 1);
+      assert(c==0);
     }
     else if(buf[0] == 'b')
     {
@@ -123,62 +92,76 @@ void ExchExecutor::start()
     threads[i]->create(threads[i]->get_exchange()->get_name());
   }
 
+  ssize_t c;
+  char buf[1];
   while(true)
   {
-    ssize_t c;
     for(int i=0;i<num_exchanges;++i)
     {
-      while(true)
-      {
-        c = write(pipes_write_cmd[i], "a", 1);
-        if(c==1) //success write;
-        {
-          break;
-        }
-
-        if(errno == EINTR) //interrupted by a signal, re-try
-        {
-          continue;
-        }
-
-        assert(false);
-      }
+      c = safe_write(pipes_write_cmd[i], "p", 1);
+      assert(c==0);
     }
 
     for(int i=0;i<num_exchanges;++i)
     {
-      while(true)
-      {
-        char buf[1];
-        c = read(pipes_read_done[i], buf, 1);
-        if(c==1) //success read;
-        {
-          break;
-        }
-
-        if(errno == EINTR) //interrupted by a signal, re-try
-        {
-          continue;
-        }
-
-        std::cerr << "errno=" << errno << std::endl;
-        assert(false);
-      }
+      c = safe_read(pipes_read_done[i], buf, 1);
+      assert(c==1);
     }
 
     for(int i=0; i<num_trades; i++)
     {
       cout << trades[i].coin;
 
+      double max = -99999; 
+      double min = 99999;
+      int max_index = -1;
+      int min_index = -1;
       for(int j=0;j<num_exchanges;++j)
       {
-        cout << "\t" << threads[j]->price_map[string(trades[i].coin)];
+        double p = threads[j]->price_map[string(trades[i].coin)];
+        cout << " " << setw(14) <<  p << "(" << threads[j]->get_exchange()->get_name()  << ")";
+
+        if(p > max)
+        {
+          max = p;
+          max_index = j;
+        }
+
+        if(p < min && min > 0)
+        {
+          min = p;
+          min_index = j;
+        }
+      }
+
+      cout << " " << setw(14) << max << " " << setw(14) << min;
+
+      double gap = -1;
+      double ratio = -1;
+      if(max > 0 && min < max && min > 0)
+      {
+        gap = max - min;
+        double fee = (max * 0.0025) +  (min * 0.0025);
+
+        if(gap > fee)
+        {
+          gap -= fee;
+          ratio = (100 * gap) / min;
+          cout << " " << setw(14) << gap << " " << setw(14) << ratio;
+
+          if(ratio > 3)
+          {
+            assert(max_index>=0 && max_index<num_exchanges);
+            assert(min_index>=0 && min_index<num_exchanges);
+
+            return;
+          }
+        }
       }
 
       cout << endl;
     }
   }
-
 
   /*
   double price1 = exchange1->getPrice(exchange1->get_symbol(coin1, coin2));

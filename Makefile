@@ -33,7 +33,7 @@ OBJECTS=                         \
     $(BIN_DIR)/liqui-api.o       \
     $(BIN_DIR)/thread.o          \
     $(BIN_DIR)/executor.o        \
-    $(BIN_DIR)/exchange.o        \
+    $(BIN_DIR)/main.o            \
 
 
 $(EXE): $(BIN_DIR) $(OBJECTS)
@@ -56,11 +56,11 @@ $(BIN_DIR)/thread.o: thread/thread.cpp thread/thread.h
 	g++ $(GPP_FLAGS) $(INCLUDE_PATH) -c thread/thread.cpp -o $@
 $(BIN_DIR)/executor.o: executor.cpp executor.h
 	g++ $(GPP_FLAGS) $(INCLUDE_PATH) -c executor.cpp -o $@
-$(BIN_DIR)/exchange.o: exchange.cpp
-	g++ $(GPP_FLAGS) $(INCLUDE_PATH) -c exchange.cpp -o $@
+$(BIN_DIR)/main.o: main.cpp
+	g++ $(GPP_FLAGS) $(INCLUDE_PATH) -c main.cpp -o $@
 
 test:
-	export LD_LIBRARY_PATH=$(LIBCURL_LIB) ; ./$(EXE) eth eos 100 zrx 1000
+	export LD_LIBRARY_PATH=$(LIBCURL_LIB) ; ./$(EXE) eth eos 100 zrx 1000 oax 100
 
 clean:
 	rm -fr $(BIN_DIR)

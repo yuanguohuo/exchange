@@ -33,8 +33,11 @@ inline bool file_exists (const std::string& name)
 */
 
 string hmac_sha256( const char *key, const char *data);
+string hmac_sha512( const char *key, const char *data);
 string sha256( const char *data );
 void string_toupper( string &src);
 string string_toupper( const char *cstr );
 
+ssize_t safe_read(int fd, void *buf, size_t count);
+ssize_t safe_write(int fd, const void *buf, size_t count);
 #endif

@@ -1,21 +1,19 @@
 #!/bin/bash
 
+skey=dc2e949d3b9f83f8fcb8d19cd160397adb95007c01fa7077a52f4eba67c5a0ef
+akey=9HXTWTI0-21HLGAY6-5TDDS128-KRMEJSDF-KBTGOJ0C
 
-params="nonce=2&method=Trade&pair=zrx_eth&type=buy&rate=0.00002&amount=100"
+postbody="nonce=`date +%s`&method=Trade&pair=zrx_eth&type=BUY&rate=0.00006793&amount=100"
 
-sig=`echo -n "$params" | openssl dgst -sha256 -hmac "$sec" | sed -e 's/.*=//'`
+length=$(echo -en ${#postbody})
+
+sig=`echo -n "$postbody" | openssl dgst -sha512 -hmac "$skey" | sed -e 's/.*=//'`
 
 echo $sig
 
-
-echo "https://api.liqui.io/tapi?$params"
-
-curl \
-    -H "Key: 1W4ANVH1-8JQ1DVNF-ZX4TA6L6-3JZD4AP1-Z15HZH39"   \
-    -H "Sign: $sign"                                         \
-    -X "POST"                                                \
-    "https://api.liqui.io/tapi?$params"
-
-
-
-echo $?
+curl -v                                                       \
+     -H "Key: $akey"                                          \
+     -H "Sign: $sig"                                          \
+     -H "Content-Length: $length"                             \
+     -L -X POST "https://api.liqui.io/tapi"                   \
+     -d "$postbody"

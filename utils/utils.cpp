@@ -99,6 +99,13 @@ string hmac_sha256( const char *key, const char *data)
   return b2a_hex((char *)digest, 32);
 }
 
+string hmac_sha512( const char *key, const char *data)
+{
+  unsigned char* digest;
+  digest = HMAC(EVP_sha512(), key, strlen(key), (unsigned char*)data, strlen(data), NULL, NULL);    
+  return b2a_hex((char *)digest, 32);
+}
+
 string sha256(const char *data)
 {
   unsigned char digest[32];
@@ -107,4 +114,47 @@ string sha256(const char *data)
   SHA256_Update(&sha256, data, strlen(data) );
   SHA256_Final(digest, &sha256);
   return b2a_hex((char *)digest, 32);
+}
+
+ssize_t safe_read(int fd, void *buf, size_t count)
+{
+  size_t cnt = 0;
+
+  while (cnt < count)
+  {
+    ssize_t r = read(fd, buf, count - cnt);
+
+    if (r == 0) //EOF
+      return cnt;
+
+    if (r < 0)
+    {
+      if (errno == EINTR)
+        continue;
+
+      return -errno;
+    }
+
+    cnt += r;
+    buf = (char *)buf + r;
+  }
+  return cnt;
+}
+
+ssize_t safe_write(int fd, const void *buf, size_t count)
+{
+  while (count > 0)
+  {
+    ssize_t r = write(fd, buf, count);
+    if (r < 0)
+    {
+      if (errno == EINTR)
+        continue;
+
+      return -errno;
+    }
+    count -= r;
+    buf = (char *)buf + r;
+  }
+  return 0;
 }

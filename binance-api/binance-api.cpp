@@ -91,12 +91,13 @@ double Binance::getFee(const string& symbol)
 }
 
 int Binance::send_order(
-    const string& symbol,
+    const char* base_coin,
+    const char* coin,
     const char *side,
-    const char *type,
-    const char *timeInForce,
     double quantity,
     double price,
+    const char *type,
+    const char *timeInForce,
     long recvWindow)
 {
   string url(server_addr);
@@ -105,7 +106,7 @@ int Binance::send_order(
   string action = "POST";
 
   string post_data("symbol=");
-  post_data.append(symbol);
+  post_data.append(get_symbol(coin, base_coin));
 
   post_data.append("&side=");
   post_data.append( side );
@@ -144,24 +145,24 @@ int Binance::send_order(
   cout << "action: " << action <<endl;
   cout << "post_data: " << post_data <<endl;
 
-  string str_result;
-  if(curl_perform_with_header(url, action, post_data, extra_http_header, str_result))
-  {
-    return 1;
-  }
+  //string str_result;
+  //if(curl_perform_with_header(url, action, post_data, extra_http_header, str_result))
+  //{
+  //  return 1;
+  //}
 
-  cout << "str_result: " << str_result <<endl;
+  //cout << "str_result: " << str_result <<endl;
 
-  if (str_result.size() <= 0)
-  {
-    return 2;
-  }
+  //if (str_result.size() <= 0)
+  //{
+  //  return 2;
+  //}
 
-  Json::Value jsonValue;
-  if(json_str2value(str_result, jsonValue))
-  {
-    return 3;
-  }
+  //Json::Value jsonValue;
+  //if(json_str2value(str_result, jsonValue))
+  //{
+  //  return 3;
+  //}
 
   return 0;
 }

@@ -51,14 +51,17 @@ class Exchange
     virtual double getPrice(const string& symbol) = 0;
     virtual int getPrices(const char* base_coin, int num_trades, const Trade* trades, map<string,double> & ret_map) =0;
     virtual double getFee(const string& symbol) = 0;
+
     virtual int send_order(
-         const string& symbol,
-         const char *side,
-         const char *type,
-         const char *timeInForce,
-         double quantity,
-         double price,
-         long recvWindow) = 0;
+        const char* base_coin,
+        const char* coin,
+        const char *side,
+        double quantity,
+        double price,
+        const char *type,
+        const char *timeInForce,
+        long recvWindow) =0;
+
 
   private:
     int get_allFees(map<string, double>& fee_map);

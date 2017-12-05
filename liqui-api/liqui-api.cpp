@@ -149,67 +149,59 @@ double Liqui::getFee(const string& symbol)
 }
 
 int Liqui::send_order(
-    const string& symbol,
+    const char* base_coin,
+    const char* coin,
     const char *side,
-    const char *type,
-    const char *timeInForce,
     double quantity,
     double price,
-    long recvWindow)
+    const char *type,          //not used
+    const char *timeInForce,   //not used
+    long recvWindow)           //not used
 {
   string url(server_addr);
-  url += "/api/v3/order";
+  url += "/tapi";
 
   string action = "POST";
 
-  string post_data("symbol=");
-  post_data.append(symbol);
+  string post_data("nonce=");
+  post_data.append(to_string(get_current_epoch()));
 
-  post_data.append("&side=");
-  post_data.append( side );
+  post_data.append("&method=Trade");
+
+  post_data.append("&pair=");
+  post_data.append(get_symbol(coin,base_coin));
 
   post_data.append("&type=");
-  post_data.append(type);
+  post_data.append(side);
 
-  post_data.append("&timeInForce=");
-  post_data.append(timeInForce);
-
-  post_data.append("&quantity=");
-  post_data.append(to_string(quantity));
-
-  post_data.append("&price=");
+  post_data.append("&rate=");
   post_data.append(to_string(price));
 
-  if (recvWindow > 0)
-  {
-    post_data.append("&recvWindow=");
-    post_data.append(to_string(recvWindow));
-  }
+  post_data.append("&amount=");
+  post_data.append(to_string(quantity));
 
-  post_data.append("&timestamp=");
-  post_data.append(to_string(get_current_ms_epoch()));
-
-  string signature = hmac_sha256(sec_key, post_data.c_str());
-  post_data.append("&signature=");
-  post_data.append(signature);
+  string signature = hmac_sha512(sec_key, post_data.c_str());
 
   vector <string> extra_http_header;
-  string header_chunk("X-MBX-APIKEY: ");
-  header_chunk.append(api_key);
-  extra_http_header.push_back(header_chunk);
+  string header_key("Key: ");
+  header_key.append(api_key);
+  extra_http_header.push_back(header_key);
+  string header_sig("Sign: "); 
+  header_sig.append(signature);
 
   cout << "url: " << url <<endl;
   cout << "action: " << action <<endl;
   cout << "post_data: " << post_data <<endl;
 
-  string str_result;
-  if(curl_perform_with_header(url, action, post_data, extra_http_header, str_result))
-  {
-    return 1;
-  }
+  //string str_result;
+  //if(curl_perform_with_header(url, action, post_data, extra_http_header, str_result))
+  //{
+  //  return 1;
+  //}
 
-  cout << "str_result: " << str_result <<endl;
+  //cout << "str_result: " << str_result <<endl;
 
+  /*
   if (str_result.size() <= 0)
   {
     return 2;
@@ -220,6 +212,7 @@ int Liqui::send_order(
   {
     return 3;
   }
+  */
 
   return 0;
 }

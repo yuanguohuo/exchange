@@ -25,13 +25,14 @@ class Binance : public Exchange
     int getPrices(const char* base_coin, int num_trades, const Trade* trades, map<string,double> & ret_map);
     double getFee(const string& symbol);
     int send_order(
-         const string& symbol,
-         const char *side,
-         const char *type,
-         const char *timeInForce,
-         double quantity,
-         double price,
-         long recvWindow);
+        const char* base_coin,
+        const char* coin,
+        const char *side,
+        double quantity,
+        double price,
+        const char *type,
+        const char *timeInForce,
+        long recvWindow);
 
   private:
     int getAllPrices(map<string,double>& price_map);
